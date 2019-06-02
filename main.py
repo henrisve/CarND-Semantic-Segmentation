@@ -118,19 +118,22 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param learning_rate: TF Placeholder for learning rate
     """
     # TODO: Implement function
+    print("in train")
     sess.run(tf.global_variables_initializer())
     for epoch in range(epochs):
+        print("epoch",epoch)
+        losses = []
         for image,label in get_batches_fn(batch_size):
             #training
-            loss = sess.run(train_op, feed_dict={input_image: image, 
+            _,loss = sess.run([train_op, cross_entropy_loss], feed_dict={input_image: image, 
                                                  correct_label: label,
                                                  keep_prob: 0.5,
                                                  learning_rate: 0.00001})
             
-            pass
+            losses.append('{:.6f}'.format(loss))
             # loss = session.run
+        print(losses)
 tests.test_train_nn(train_nn)
-
 
 def run():
     num_classes = 2
@@ -138,8 +141,8 @@ def run():
     data_dir = './data'
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
-    epochs=2
-    batch_size=1
+    epochs=10
+    batch_size=16
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
     
@@ -151,6 +154,9 @@ def run():
     correct_label = tf.placeholder(tf.int32, shape= [None, None, None, num_classes])
     #input_image = tf.placeholder(tf.float32, shape=image_shape)
     learning_rate = tf.placeholder(tf.float32)
+    print("start")
+    
+    #saver = tf.train.Saver()
     with tf.Session() as sess:
         # Path to vgg model
         
@@ -169,7 +175,7 @@ def run():
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
              correct_label, keep_prob, learning_rate)
         # TODO: Save inference data using helper.save_inference_samples
-        #helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
+        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
 
         # OPTIONAL: Apply the trained model to a video
 
